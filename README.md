@@ -1,13 +1,225 @@
-# CS360_Mobile_Architecture_and_Programming
+# Android Inventory Management Application
 
-The mobile app I developed for this course was designed to help users track inventory items efficiently, reduce manual errors, and received timely alerts when stock levels fall too low.  The core goal was to create a simple, reliable tool that supports users who need quick access to item details, quantities, and automated low-stock notifications.  This addressed a clear user need of minimizing the cognitive load and time spent managing supplies, whether in a small business, workshop, or personal environment.
+**Java • Android Studio • SQLite • RecyclerView • SMS Notifications**
 
-To suppost these needs, the app required several key screens and features.  The main inventory list provided a clean overview of all items, while the add/edit item screen allowed users to input names, quantities, and thresholds.  A detail view supported clarity and quick edits. I designed the UI using Android's user-centered guidelines of clear hierarchy, consistent spacing, readable typography, and intuitive touch targets. Interactive elements such as buttons, text fields, and *RecyclerView* list items were clearly labeled and easy to identify. These choices made the design successful because users could complete their primary tasks of viewing, adding, and updating inventory, all without confusion or unnecessssary steps. 
+An Android inventory-management application developed as part of **CS 360: Mobile Architecture and Programming** at Southern New Hampshire University.
 
-My coding approach focused on building the app in small, testable components.  I used structured Java classes, a database helper for CRUD operations, and a *RecyclerView* adapter to manage dynamic lists. I relied on incremental development by implementing one feature at a time, verifying it worked, and then layering on the next feature. This strategy kept the codebase organized and made debugging far easier. These techniques (modular design, iterative testing, and clean separation of UI and logic) are ones that I will continue using in future projects.
+This repository preserves the application substantially as it was completed during the course. Rather than retroactively rebuilding the project around skills I developed later, I am presenting it as a learning artifact that demonstrates my mobile-development foundation and documents how I would improve the application today.
 
-Testing was an ongoing part of development. I manually tested each feature, including adding items, editing them, deleting them, and triggering SMS alerts for low stock. This process was essential because it revealed issues early, such as permission handling for SMS and edge cases in quantity validation.  Ensuring the app behaved correctly under real conditions strengthened both reliability and user trust.
+## Project Overview
 
-Throughout the full design and development process, I encountered challenges that required creative solutions. One example was implementing SMS alerts in a way that respected Android's permission model while still providing a smooth user experience. Another was ensuring the UI remained clean and readable across different screen sizes. Solving these problems required careful experimentation and refinement.  With my limited level of programming experience, these two items took me the longest to find a viable solution.
+The application provides a mobile interface for maintaining a locally persisted inventory.
 
-The component where I demonstrated the strongest mastery was the integration of the *RecyclerView* with the database, including dynamic updates and clean UI interactions. This part of the app showcased my understanding of Android's architecture, data flow, and user-centered design principles.  It also tied together everything from Project Two's UI planning to Project Three's functional implementation.
+Users can:
+
+- Create a local account and log in
+- View inventory stored in SQLite
+- Add inventory items
+- Delete inventory items
+- Increase and decrease item quantities
+- Prevent quantities from being decremented below zero
+- Receive an SMS low-stock notification when an item's quantity reaches zero
+
+The application uses multiple Android activities, XML layouts, a RecyclerView-based inventory interface, and a local SQLite database.
+
+## Application Architecture
+
+The application separates major responsibilities across several Java classes.
+
+### `LoginActivity`
+
+Handles user login and registration workflows and delegates account persistence and credential validation to the database helper.
+
+### `InventoryActivity`
+
+Displays inventory through a `RecyclerView`, loads persisted inventory from SQLite, and provides navigation to the item-creation screen.
+
+### `AddItemActivity`
+
+Provides the interface for creating inventory records and performs basic validation before saving inventory data.
+
+### `ItemAdapter`
+
+Connects inventory data to the RecyclerView interface and handles item-level interactions, including:
+
+- Item deletion
+- Quantity increases
+- Quantity decreases
+- Low-stock detection
+- SMS notification behavior
+
+### `AppDatabaseHelper`
+
+Extends Android's `SQLiteOpenHelper` and manages local persistence for:
+
+- User accounts
+- Inventory items
+- User registration
+- Credential validation
+- Item creation
+- Quantity updates
+- Item deletion
+- Inventory retrieval
+
+### `SMSPermissionActivity`
+
+Supports the application's SMS permission workflow for low-stock notifications.
+
+## Data Persistence
+
+The application uses a local SQLite database containing separate tables for user accounts and inventory items.
+
+Inventory records contain:
+
+- Item ID
+- Name
+- SKU
+- Category
+- Quantity
+
+Database operations are separated from the main Activities through `AppDatabaseHelper`, allowing UI components to interact with persisted data through a dedicated data-access class.
+
+## Inventory Workflow
+
+A typical inventory interaction follows this flow:
+
+1. The user logs in to the application.
+2. `InventoryActivity` retrieves persisted inventory from SQLite.
+3. Inventory records are displayed through a `RecyclerView` and `ItemAdapter`.
+4. Users can add, delete, increase, or decrease inventory.
+5. Database changes are persisted through `AppDatabaseHelper`.
+6. When an item's quantity reaches zero, the application can trigger an SMS low-stock notification when the required permission is available.
+
+## Input Validation
+
+The original application includes basic validation for:
+
+- Required login and registration fields
+- Required inventory fields
+- Numeric quantity input
+- Prevention of decrementing inventory below zero
+
+These checks provided an introduction to maintaining valid application state at the UI and persistence boundaries.
+
+## Security & Production Considerations
+
+This application was created as an academic mobile-development project and **should not be considered production-ready**.
+
+Reviewing the original implementation today with a stronger software-engineering and security perspective reveals several areas I would address before developing a production version.
+
+### Credential Storage
+
+The academic implementation stores account passwords directly in the local SQLite database.
+
+A production application should **never store plaintext passwords**.
+
+A future implementation would replace this design with an appropriate credential-protection strategy, such as secure password hashing and verification or a dedicated authentication/identity solution appropriate to the application's architecture.
+
+### Input and Domain Validation
+
+The application validates required fields and numeric quantity input, but additional validation should enforce stronger domain rules.
+
+Examples include:
+
+- Rejecting negative starting quantities
+- Applying appropriate SKU constraints
+- Defining length and format requirements
+- Validating inventory data beyond basic field presence
+
+### Notification Configuration
+
+The academic application uses a predefined emulator/test SMS destination for demonstrating low-stock notifications.
+
+A production implementation should move notification configuration outside application logic and allow the destination and notification behavior to be configured appropriately.
+
+### Database Migrations
+
+The initial database implementation uses a simple drop-and-recreate strategy when upgrading the schema.
+
+A production application should use explicit schema migrations capable of preserving user and inventory data across application versions.
+
+### Application Architecture
+
+A future version would further separate:
+
+- UI concerns
+- Business/domain logic
+- Persistence
+- Authentication
+- Notification behavior
+
+This would improve maintainability, testability, and long-term scalability.
+
+### Automated Testing
+
+The project contains the default Android test structure, but the original application does not contain the level of automated testing I would expect from a production application.
+
+Future development would include dedicated tests for:
+
+- Database operations
+- Authentication behavior
+- Input validation
+- Inventory state transitions
+- Failure conditions
+- Permission-dependent behavior
+
+## What I Learned
+
+This project introduced me to building a complete mobile application whose interface, application logic, persistence layer, and Android platform capabilities must work together.
+
+The project gave me practical experience with:
+
+- Android application structure
+- Activity lifecycle concepts
+- Java-based Android development
+- XML interface layouts
+- RecyclerView and adapter patterns
+- SQLite persistence
+- CRUD operations
+- Input validation
+- Runtime permissions
+- SMS integration
+- Navigation between activities
+
+Just as importantly, revisiting this project later demonstrates how my engineering perspective has evolved.
+
+I can now identify design, security, testing, and maintainability decisions that I would approach differently in a newer application. That ability to evaluate previous work and identify concrete improvements is an important part of my continued development as a software engineer.
+
+## Technologies & Concepts
+
+- Java
+- Android Studio
+- Android SDK
+- SQLite
+- `SQLiteOpenHelper`
+- RecyclerView
+- XML Layouts
+- Activities
+- CRUD Operations
+- Local Data Persistence
+- Runtime Permissions
+- SMS Notifications
+- Input Validation
+- Object-Oriented Programming
+
+## Repository Structure
+
+The repository contains the complete Android Studio project rather than a compiled application or packaged archive.
+
+Key source files include:
+
+- `AddItemActivity.java`
+- `AppDatabaseHelper.java`
+- `InventoryActivity.java`
+- `Item.java`
+- `ItemAdapter.java`
+- `LoginActivity.java`
+- `SMSPermissionActivity.java`
+- `AndroidManifest.xml`
+- Android XML layouts and application resources
+
+## Academic Context
+
+Completed as part of **CS 360: Mobile Architecture and Programming** at Southern New Hampshire University.
+
+This repository is presented as a learning and portfolio artifact demonstrating my foundation in Android application development and providing a transparent example of how I evaluate earlier work using the engineering practices I have developed since completing the project.
